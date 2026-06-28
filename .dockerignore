@@ -1,5 +1,7 @@
 __pycache__
 *.pyc
+*.pyo
+*.pyd
 .env
 chromadb
 data/

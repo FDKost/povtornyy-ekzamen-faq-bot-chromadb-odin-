@@ -1,21 +1,14 @@
 import os
-from dataclasses import dataclass
-from pathlib import Path
+from dotenv import load_dotenv
 
-@dataclass
-class Settings:
-    openai_api_key: str
-    chroma_host: str
-    chroma_port: int
-    chroma_persist_directory: Path
+load_dotenv()
 
-    @staticmethod
-    def from_env() -> "Settings":
-        return Settings(
-            openai_api_key=os.getenv("OPENAI_API_KEY", ""),
-            chroma_host=os.getenv("CHROMA_HOST", "localhost"),
-            chroma_port=int(os.getenv("CHROMA_PORT", "8000")),
-            chroma_persist_directory=Path(os.getenv("CHROMA_PERSIST_DIRECTORY", "./chromadb")),
-        )
-
-settings = Settings.from_env()
+class Config:
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./chromadb")
+    FAQ_DATA_PATH = os.getenv("FAQ_DATA_PATH", "./data/faq.csv")
+    TOP_K = int(os.getenv("TOP_K", "5"))
+    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
+    CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "64"))
+    LLM_MODEL = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
+    EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-ada-002")

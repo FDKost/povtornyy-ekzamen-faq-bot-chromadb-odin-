@@ -1,27 +1,12 @@
-# syntax=docker/dockerfile:1
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-# Install Poetry
-ENV POETRY_VERSION=1.8.3
-RUN pip install "poetry==$POETRY_VERSION"
-
-# Set work directory
 WORKDIR /app
 
-# Copy pyproject.toml and poetry.lock
-COPY pyproject.toml poetry.lock* /app/
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+COPY . .
 
-# Copy source code
-COPY src/ /app/src/
-COPY tests/ /app/tests/
-COPY .env.example /app/.env
+ENV PYTHONUNBUFFERED=1
 
-# Expose port
-EXPOSE 8000
-
-# Run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "src/main.py"]

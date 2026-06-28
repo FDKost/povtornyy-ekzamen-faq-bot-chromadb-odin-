@@ -1,88 +1,107 @@
 # FAQ Bot
 
-A simple FAQ bot built with FastAPI, LangChain, and ChromaDB.  
-It can answer user questions by retrieving relevant FAQ entries and can refresh its knowledge base from a CSV file using a single MCP‑tool.
+This project implements a FAQ chatbot that uses **ChromaDB** for vector storage and **LangChain** for conversational AI. It also demonstrates how to integrate a custom tool (MCP-tool) into the conversation flow.
 
 ## Features
 
-- **Vector search** with ChromaDB and OpenAI embeddings.
-- **LLM powered answers** using LangChain and OpenAI.
-- **Single MCP‑tool** to refresh the FAQ database from a CSV file.
-- **FastAPI** REST API with health checks.
-- **Docker** and Docker‑Compose for easy deployment.
-- **Unit & integration tests** with pytest.
+- Store FAQ data in ChromaDB with embeddings.
+- Retrieve relevant answers using similarity search.
+- Generate responses with OpenAI LLM.
+- Custom MCP-tool that transforms user queries.
+- Command-line interface for quick interaction.
+- Unit tests covering core functionality.
 
 ## Prerequisites
 
-- Docker & Docker‑Compose
-- Python 3.11+ (for local development)
+- Python 3.10+
+- Docker (optional, for containerized deployment)
 - An OpenAI API key
 
 ## Setup
 
+### 1. Clone the repository
+
 ```bash
-# Clone the repo
 git clone https://github.com/yourusername/faq-bot.git
 cd faq-bot
-
-# Create a virtual environment (optional but recommended)
-python -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-poetry install
-
-# Copy the example env file
-cp .env.example .env
-# Edit .env with your OpenAI key
 ```
 
-## Running locally
+### 2. Create a virtual environment
 
 ```bash
-# Start the API
-uvicorn src.main:app --reload
+python -m venv venv
+source venv/bin/activate   # On Windows: venv\Scripts\activate
 ```
 
-The API will be available at `http://127.0.0.1:8000`.
-
-## Docker
+### 3. Install dependencies
 
 ```bash
-docker compose up --build
+pip install -r requirements.txt
 ```
 
-This will start:
+### 4. Configure environment variables
 
-- `chroma` – ChromaDB container.
-- `api` – FastAPI container.
+Create a `.env` file in the project root (or export the variables manually):
 
-The API will be available at `http://localhost:8000`.
+```dotenv
+OPENAI_API_KEY=your_openai_api_key
+CHROMA_PERSIST_DIR=./chromadb
+FAQ_DATA_PATH=./data/faq.csv
+TOP_K=5
+CHUNK_SIZE=512
+CHUNK_OVERLAP=64
+LLM_MODEL=gpt-3.5-turbo
+EMBEDDING_MODEL=text-embedding-ada-002
+```
 
-## API Endpoints
+### 5. Prepare FAQ data
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/query` | Submit a question. Body: `{ "question": "..." }`. |
-| `POST` | `/refresh` | Refresh FAQ database from a CSV file. Body: `{ "file_path": "/path/to/file.csv" }`. |
-| `GET` | `/health` | Health check. |
+Place a CSV file at `./data/faq.csv` with two columns: `question` and `answer`. Example:
+
+```csv
+question,answer
+What is your name?,I am a chatbot.
+How can I help you?,Ask me anything about our services.
+```
+
+### 6. Ingest data into ChromaDB
+
+```bash
+python -c "from ingestion import ingest_faq_data; ingest_faq_data()"
+```
+
+## Running the Bot
+
+```bash
+python src/main.py
+```
+
+Type your question and press Enter. Type `exit` to quit.
 
 ## Testing
+
+Run unit tests with:
 
 ```bash
 pytest
 ```
 
-## FAQ
+## Docker
 
-**Q: How does the bot decide when to refresh the FAQ?**  
-A: The bot can be refreshed manually via the `/refresh` endpoint or by invoking the `RefreshFAQ` tool from within a conversation.
+Build the Docker image:
 
-**Q: Where is the vector store persisted?**  
-A: By default it is persisted in the `/data` directory inside the Chroma container. Adjust `CHROMA_PERSIST_DIRECTORY` in `.env` to change.
+```bash
+docker build -t faq-bot .
+```
 
-**Q: Can I use a different embedding model?**  
-A: Yes, modify `src.ingestion.py` to use a different embedding provider.
+Run the container (replace environment variables accordingly):
+
+```bash
+docker run -e OPENAI_API_KEY=... \
+           -e CHROMA_PERSIST_DIR=/data/chromadb \
+           -v $(pwd)/data:/data \
+           faq-bot
+```
 
 ## License
 
