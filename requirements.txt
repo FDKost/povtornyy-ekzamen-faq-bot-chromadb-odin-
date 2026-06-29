@@ -1,6 +1,8 @@
+fastapi
+uvicorn
 langchain
+langchain-mcp
 chromadb
 python-dotenv
-openai
-pandas
-pytest
+requests
+pydantic
